@@ -1,11 +1,19 @@
 const form = document.querySelector('#novoItem')
 const lista = document.querySelector('#lista')
+const itens = []
 
 
 /* Criando evento de submit para que seja criado o elemento */
 form.addEventListener("submit", (evento) => {
     evento.preventDefault()
-    criaElemento(evento.target.elements['nome'].value, evento.target.elements['quantidade'].value)
+    const nome = evento.target.elements['nome']
+    const quantidade = evento.target.elements['quantidade']
+    criaElemento(nome.value, quantidade.value)
+
+    nome.value = ""
+    quantidade.value = ""
+
+
 })
 
 function criaElemento(nome, quantidade) {
@@ -26,5 +34,17 @@ function criaElemento(nome, quantidade) {
     que colocamos nos campos de submit */
     lista.appendChild(novoElemento)
 
+    /* Aqui criamos um objeto que ira receber o nome e a quantidade do item atual que criarmos */
+    const itemAtual = {
+      nome: "nome",
+      quantiade: "quantiade"
+    }
+
+    /* Enviamos esse objeto para o array itens  */
+    itens.push(itemAtual)
+    
+    /* Salvamos esse array no localStorage, e usamos o método stringfy no JSON para transformar
+    esse objeto em uma string */
+    localStorage.setItem("item", JSON.stringify(itens))
 
 }
