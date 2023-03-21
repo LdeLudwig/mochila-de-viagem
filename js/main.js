@@ -1,50 +1,84 @@
 const form = document.querySelector('#novoItem')
 const lista = document.querySelector('#lista')
-const itens = []
+// Mudamos o formato de string para array 
+const itens = JSON.parse(localStorage.getItem("itens")) || []
 
+// Para cada elemento já escritos continuarem ao atualizar a página
+itens.forEach((elemento)=>{
+  criaElemento(elemento)
+})
 
-/* Criando evento de submit para que seja criado o elemento */
+// Refatorando para que que o elemento seja criado e adicionado no array quando realizado o submit
 form.addEventListener("submit", (evento) => {
     evento.preventDefault()
+
     const nome = evento.target.elements['nome']
     const quantidade = evento.target.elements['quantidade']
-    criaElemento(nome.value, quantidade.value)
+
+    //const para conferir o nome do elemento nome no array itens
+    const existe = itens.find(elemento => elemento.nome === nome.value)
+
+    const itemAtual = {
+      "nome": nome.value,
+      "quantidade": quantidade.value
+    }
+
+    //Condicional para conferir se o elemento
+    if(existe){
+      itemAtual.id = existe.id
+      atualizaElemento(itemAtual)
+      itens[itens.findIndex(elemento=>elemento.id === existe.id)] = itemAtual
+    }else{
+      itemAtual.id = itens[itens.length - 1] ? (itens[itens.length-1].id + 1) : 0;
+
+      criaElemento(itemAtual)
+
+      itens.push(itemAtual)
+    }
+    
+    localStorage.setItem("itens", JSON.stringify(itens))
 
     nome.value = ""
     quantidade.value = ""
-
-
 })
 
-function criaElemento(nome, quantidade) {
-    /* Criando novo elemento na lista e adicionando a classe item */
+// Refatorando a função, agora que precisamos de apenas 1 fator para executá-la
+function criaElemento(item) {
+
     const novoElemento = document.createElement('li')
     novoElemento.classList.add("item")
 
-      /* Aqui utilizamos o appendChild para que o novo elemento li, que já recebeu a classe item
-    receba a tag strong com a quantidade que definimos nos campos antes do submit. */
     const numeroItem = document.createElement('strong')
-    numeroItem.innerHTML = quantidade
-
-    /* Nessa parte, atrribuimos o nome ao novo elemento que recebeu a quantidade do elemento. */
-    novoElemento.appendChild(numeroItem)
-    novoElemento.innerHTML += nome
-
-    /* E nessa parte, criamos um novo elemento dentro da lista de elementos, com a quantidade e o nome 
-    que colocamos nos campos de submit */
-    lista.appendChild(novoElemento)
-
-    /* Aqui criamos um objeto que ira receber o nome e a quantidade do item atual que criarmos */
-    const itemAtual = {
-      nome: "nome",
-      quantiade: "quantiade"
-    }
-
-    /* Enviamos esse objeto para o array itens  */
-    itens.push(itemAtual)
+    numeroItem.innerHTML = item.quantidade
+    numeroItem.dataset.id = item.id
     
-    /* Salvamos esse array no localStorage, e usamos o método stringfy no JSON para transformar
-    esse objeto em uma string */
-    localStorage.setItem("item", JSON.stringify(itens))
 
+    novoElemento.appendChild(numeroItem)
+    novoElemento.innerHTML += item.nome
+
+    novoElemento.appendChild(botaoDeleta(item.id))
+
+    lista.appendChild(novoElemento)
+}
+
+function atualizaElemento(item){
+  document.querySelector("[data-id='"+item.id+"']").innerHTML = item.quantidade
+}
+
+function botaoDeleta(id){
+  const elementoBotao = document.createElement("button")
+  elementoBotao.innerText = "X"
+
+  elementoBotao.addEventListener("click", function(){
+    deletaElemento(this.parentNode, id)
+  })
+  return elementoBotao
+}
+
+function deletaElemento(tag,id){
+  tag.remove()
+
+  itens.splice(itens.findIndex(elemento=>elemento.id === id),1)
+
+  localStorage.setItem("itens", JSON.stringify(itens))
 }
